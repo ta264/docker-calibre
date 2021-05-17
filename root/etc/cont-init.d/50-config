@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+if [ ! -f /config/metadata.db ]; then
+    echo "Creating default calibre library"
+    s6-setuidgid hotio "${APP_DIR}/bin/calibredb" --with-library "${CONFIG_DIR}" list
+fi
