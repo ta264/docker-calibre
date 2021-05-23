@@ -3,4 +3,24 @@
 
 umask "${UMASK}"
 
-exec s6-setuidgid hotio "${APP_DIR}/bin/calibre-server" --enable-auth --auth-mode="${AUTH_MODE}" --port 8081 --url-prefix "${URL_PREFIX}" "${CONFIG_DIR}"
+FINAL_ARGS="--port 8081"
+
+if [ -z ${USER+x} ] || [ -z ${PASSWORD+x} ]; then
+    echo "One of user/password missing, disabling authentication"
+    FINAL_ARGS="${FINAL_ARGS} --disable-auth --enable-local-write"
+else
+    FINAL_ARGS="${FINAL_ARGS} --enable-auth"
+    if [ -z ${AUTH_MODE+x} ]; then
+        FINAL_ARGS="${FINAL_ARGS} --auth-mode=${AUTH_MODE}"
+    fi
+fi
+
+if [ ! -z ${URL_PREFIX+x} ]; then
+    FINAL_ARGS="${FINAL_ARGS} --url-prefix=${URL_PREFIX}"
+fi
+
+if [ ! -z ${ARGS+x} ]; then
+    FINAL_ARGS="${FINAL_ARGS} ${ARGS}"
+fi
+
+exec s6-setuidgid hotio "${APP_DIR}/bin/calibre-server" ${FINAL_ARGS} "${BOOK_DIR}"
