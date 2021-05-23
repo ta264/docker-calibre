@@ -45,4 +45,7 @@ If you want calibre to use a book library somewhere other than `/books`, set the
 To enable authentication, set environment variables `USER` and `PASSWORD`.  You can also set the environment variable `AUTH_MODE` to set the authentication mode.  Set to "basic" if you are putting this server behind an SSL proxy. Otherwise, leave it unset, which will use "basic" if SSL is configured otherwise it will use "digest".
 
 ### URL Prefix
-A prefix to prepend to all URLs. Useful if you wish to run this server behind a reverse proxy. For example use, /calibre as the URL prefix.  To enable, set the environment variable `URL_PREFIX` to the desired prefix.
+A prefix to prepend to all URLs. Useful if you wish to run this server behind a reverse proxy. For example use, `/calibre` as the URL prefix.  To enable, set the environment variable `URL_PREFIX` to the desired prefix.
+
+### Additional arguments to `calibre-server`
+If the environment variable `ARGS` is set it will be passed to `calibre-server` on startup.
