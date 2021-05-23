@@ -22,7 +22,7 @@ elif [[ ${1} == "tests" ]]; then
     exit ${status}
 elif [[ ${1} == "screenshot" ]]; then
     app_url="http://localhost:8081/"
-    docker run --rm --network host -d --name service "${2}"
+    docker run --rm --network host -d --name service -e BOOK_DIR=/config "${2}"
     currenttime=$(date +%s); maxtime=$((currenttime+60)); while (! curl -fsSL "${app_url}" > /dev/null) && [[ "$currenttime" -lt "$maxtime" ]]; do sleep 1; currenttime=$(date +%s); done
     docker run --rm --network host --entrypoint="" -u "$(id -u "$USER")" -v "${GITHUB_WORKSPACE}":/usr/src/app/src zenika/alpine-chrome:with-puppeteer node src/puppeteer.js
     exit 0
