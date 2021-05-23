@@ -12,7 +12,7 @@ elif [[ ${1} == "tests" ]]; then
     docker run --rm --entrypoint="" "${2}" apt list --installed
     echo "Check if app works..."
     app_url="http://localhost:8081/"
-    docker run --network host -d --name service "${2}"
+    docker run --network host -d --name service -e BOOK_DIR=/config "${2}"
     currenttime=$(date +%s); maxtime=$((currenttime+60)); while (! curl -fsSL "${app_url}" > /dev/null) && [[ "$currenttime" -lt "$maxtime" ]]; do sleep 1; currenttime=$(date +%s); done
     curl -fsSL "${app_url}" > /dev/null
     status=$?
