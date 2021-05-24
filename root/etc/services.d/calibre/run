@@ -10,7 +10,7 @@ if [ -z ${USER+x} ] || [ -z ${PASSWORD+x} ]; then
     FINAL_ARGS="${FINAL_ARGS} --disable-auth --enable-local-write"
 else
     FINAL_ARGS="${FINAL_ARGS} --enable-auth"
-    if [ -z ${AUTH_MODE+x} ]; then
+    if [ ! -z ${AUTH_MODE+x} ]; then
         FINAL_ARGS="${FINAL_ARGS} --auth-mode=${AUTH_MODE}"
     fi
 fi
