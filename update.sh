@@ -27,8 +27,12 @@ elif [[ ${1} == "screenshot" ]]; then
     docker run --rm --network host --entrypoint="" -u "$(id -u "$USER")" -v "${GITHUB_WORKSPACE}":/usr/src/app/src zenika/alpine-chrome:with-puppeteer node src/puppeteer.js
     exit 0
 else
-    version=$(curl -sX GET "https://api.github.com/repos/kovidgoyal/calibre/releases/latest" | jq -r .tag_name | cut -c2-);
-    [[ -z ${version} ]] && exit 1
-    [[ ${version} == "null" ]] && exit 0
-    echo '{"version":"'"${version}"'"}' | jq . > VERSION.json
+    x64_version=$(curl -sX GET "https://api.github.com/repos/kovidgoyal/calibre/releases/latest" | jq -r .tag_name | cut -c2-);
+    [[ -z ${x64_version} ]] && exit 1
+    [[ ${x64_version} == "null" ]] && exit 0
+    arm_full_version=$(curl -fsSL "http://deb.debian.org/debian/dists/experimental/main/binary-arm64/Packages.xz" | xz -dc | grep -A 7 -m 1 "Package: calibre" | awk -F ": " '/Version/{print $2;exit}')
+    arm_version=$(echo "${arm_full_version}" | sed -e "s/^.*://g" -e "s/+dfsg.*//g")
+    [[ -z ${arm_version} ]] && exit 1
+    version="${x64_version}--${arm_version}"
+    echo '{"version":"'"${version}"'","x64_version":"'"${x64_version}"'","arm_version":"'"${arm_version}"'","arm_full_version":"'"${arm_full_version}"'"}' | jq . > VERSION.json
 fi

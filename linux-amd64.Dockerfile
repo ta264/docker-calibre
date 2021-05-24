@@ -16,10 +16,9 @@ RUN apt update && \
     apt clean && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
-ARG VERSION
-ARG PACKAGE_VERSION=${VERSION}
+ARG X64_VERSION
 RUN mkdir "${APP_DIR}/bin" && \
-  curl -fsSL "https://download.calibre-ebook.com/${VERSION}/calibre-${VERSION}-x86_64.txz" | tar xJf - -C "${APP_DIR}/bin" && \
+  curl -fsSL "https://download.calibre-ebook.com/${X64_VERSION}/calibre-${X64_VERSION}-x86_64.txz" | tar xJf - -C "${APP_DIR}/bin" && \
   apt-get clean && \
   rm -rf \
     /tmp/* \
