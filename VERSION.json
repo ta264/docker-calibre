@@ -1,6 +1,6 @@
 {
-  "version": "5.21.0--5.20.0",
+  "version": "5.21.0--5.21.0",
   "x64_version": "5.21.0",
-  "arm_version": "5.20.0",
-  "arm_full_version": "5.20.0+dfsg-3"
+  "arm_version": "5.21.0",
+  "arm_full_version": "5.21.0+dfsg-1"
 }
