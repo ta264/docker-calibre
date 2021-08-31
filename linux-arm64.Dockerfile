@@ -45,7 +45,7 @@ RUN apt update && \
     apt install -y --no-install-recommends --no-install-suggests calibre && \
     echo "deb http://deb.debian.org/debian buster main contrib non-free" >> /etc/apt/sources.list && \
     echo "deb http://deb.debian.org/debian experimental main" >> /etc/apt/sources.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 04EE7237B7D453EC && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 && \
     apt update && \
     apt install -y --no-install-recommends --no-install-suggests -t experimental calibre=${ARM_FULL_VERSION} && \
     mkdir "${APP_DIR}/bin" && \
