@@ -1,6 +1,6 @@
 {
-  "version": "ull--5.26.0",
-  "x64_version": "ull",
+  "version": "5.26.0--5.26.0",
+  "x64_version": "5.26.0",
   "arm_version": "5.26.0",
   "arm_full_version": "5.26.0+dfsg-2"
 }
