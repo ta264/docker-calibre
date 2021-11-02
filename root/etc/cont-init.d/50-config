@@ -5,7 +5,7 @@ echo "Ensuring library exists"
 s6-setuidgid hotio "${APP_DIR}/bin/calibredb" --with-library "${BOOK_DIR}" list --limit 1 > /dev/null
 
 # Make sure users exist
-if [ ! -z ${USER+x} ] && [ ! -z ${PASSWORD+x} ]; then
+if [ -n "${USER+x}" ] && [ -n "${PASSWORD+x}" ]; then
     USERS=$(s6-setuidgid hotio "${APP_DIR}/bin/calibre-server" --manage-users -- list)
     if [[ "${USERS}" == *"${USER}"* ]]; then
         echo "Syncing password for user ${USER}"
