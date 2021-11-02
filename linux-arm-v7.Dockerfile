@@ -1,4 +1,4 @@
-FROM ubuntu@sha256:54337979c56cc50b52ae70e5531b904e7f34a5d8c383770c75b14f51e5cb26d7
+FROM debian@sha256:a16615d23bb3ae70642414f20f5a1f37166e6b8f4e89a9304ed4b0bbcbe037a0
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -14,7 +14,8 @@ RUN mkdir "${APP_DIR}" && \
         usermod -G users hotio
 
 # install packages
-RUN apt update && \
+RUN sed -i 's/main/main non-free/' /etc/apt/sources.list && \
+    apt update && \
     apt install -y --no-install-recommends --no-install-suggests \
         ca-certificates jq curl wget2 unzip p7zip-full unrar python3 \
         locales tzdata && \
@@ -29,7 +30,7 @@ RUN apt update && \
 ARG S6_VERSION=2.2.0.3
 
 # install s6-overlay
-RUN file="/tmp/s6-overlay.tar.gz" && curl -fsSL -o "${file}" "https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-amd64.tar.gz" && \
+RUN file="/tmp/s6-overlay.tar.gz" && curl -fsSL -o "${file}" "https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-arm.tar.gz" && \
     tar xzf "${file}" -C / --exclude="./bin" && \
     tar xzf "${file}" -C /usr ./bin && \
         rm "${file}"
@@ -42,12 +43,7 @@ EXPOSE 8081
 # install calibre
 ARG ARM_FULL_VERSION
 RUN apt update && \
-    apt install -y --no-install-recommends --no-install-suggests calibre && \
-    echo "deb http://deb.debian.org/debian buster main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb http://deb.debian.org/debian unstable main" >> /etc/apt/sources.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 && \
-    apt update && \
-    apt install -y --no-install-recommends --no-install-suggests -t unstable calibre=${ARM_FULL_VERSION} && \
+    apt install -y --no-install-recommends --no-install-suggests calibre=${ARM_FULL_VERSION} && \
     mkdir "${APP_DIR}/bin" && \
     for file in /usr/bin/calibre*; do ln -s $file $(echo "${file}" | sed "s|/usr/bin|${APP_DIR}/bin|"); done && \
     for file in /usr/bin/ebook-*; do ln -s $file $(echo "${file}" | sed "s|/usr/bin|${APP_DIR}/bin|"); done && \
