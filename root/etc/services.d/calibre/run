@@ -10,17 +10,18 @@ if [ -z ${USER+x} ] || [ -z ${PASSWORD+x} ]; then
     FINAL_ARGS="${FINAL_ARGS} --disable-auth --enable-local-write"
 else
     FINAL_ARGS="${FINAL_ARGS} --enable-auth"
-    if [ ! -z ${AUTH_MODE+x} ]; then
+    if [ -n "${AUTH_MODE+x}" ]; then
         FINAL_ARGS="${FINAL_ARGS} --auth-mode=${AUTH_MODE}"
     fi
 fi
 
-if [ ! -z ${URL_PREFIX+x} ]; then
+if [ -n "${URL_PREFIX+x}" ]; then
     FINAL_ARGS="${FINAL_ARGS} --url-prefix=${URL_PREFIX}"
 fi
 
-if [ ! -z ${ARGS+x} ]; then
+if [ -n "${ARGS+x}" ]; then
     FINAL_ARGS="${FINAL_ARGS} ${ARGS}"
 fi
 
+# shellcheck disable=SC2086
 exec s6-setuidgid hotio "${APP_DIR}/bin/calibre-server" ${FINAL_ARGS} "${BOOK_DIR}"
