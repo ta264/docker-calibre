@@ -8,7 +8,6 @@ on:
 jobs:
 
   check:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -16,14 +15,13 @@ jobs:
 
       - name: Shellcheck
         run: |
-          shellcheck --version
-          if [[ -d ./root ]]; then
-            find "./root" -type f -print -exec shellcheck {} \;
-          else
-            true
-          fi
+          for file in $(find ./root/etc -type f); do
+            echo "Checking: $file"
+            shellcheck "$file"
+          done
 
   build:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -105,11 +103,10 @@ jobs:
           push: true
           platforms: ${{ steps.prep.outputs.platform }}
           file: ./${{ matrix.architecture }}.Dockerfile
-          cache-from: ghcr.io/${{ steps.prep.outputs.cache }}
-          cache-to: ghcr.io/${{ steps.prep.outputs.cache }}
+          cache-from: ${{ steps.prep.outputs.cache }}
+          cache-to: ${{ steps.prep.outputs.cache }}
           tags: |
             ${{ steps.prep.outputs.tag }}
-            ghcr.io/${{ steps.prep.outputs.tag }}
           labels: |
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.title=${{ steps.prep.outputs.title }}
@@ -124,22 +121,18 @@ jobs:
             PACKAGE_VERSION=${{ steps.prep.outputs.package-version }}
             ${{ steps.prep.outputs.build-args }}
 
-      - name: Dive Analysis
-        if: "contains(steps.arch_check.outputs.check, 'passed')"
-        uses: yuichielectric/dive-action@0.0.4
-        with:
-          image: "ghcr.io/${{ steps.prep.outputs.tag }}"
-
-      - name: Run tests
-        if: "contains(steps.arch_check.outputs.check, 'passed')"
+      - name: Show installed packages & Run tests
+        if: |
+          contains(steps.arch_check.outputs.check, 'passed') &&
+          contains(matrix.architecture, 'amd64')
         run: |
-          bash update.sh tests ghcr.io/${{ steps.prep.outputs.tag }}
+          bash update.sh tests ${{ steps.prep.outputs.tag }}
 
   publish:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        registry: [docker.io, ghcr.io]
+        registry: [docker.io]
     needs: [build]
     steps:
       - name: Checkout
@@ -203,7 +196,7 @@ jobs:
         if: "contains(needs.publish.result, 'success')"
         run: |
           if [[ -f puppeteer.js ]]; then
-            bash update.sh screenshot ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF//refs\/heads\//}-${GITHUB_SHA:0:7}
+            bash update.sh screenshot ${GITHUB_REPOSITORY}:${GITHUB_REF//refs\/heads\//}-${GITHUB_SHA:0:7}
           fi
 
       - name: Send discord notification
@@ -219,7 +212,7 @@ jobs:
         shell: bash
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
-          [[ "${STATUS}" == "success" ]] && DIGESTS=$(docker manifest inspect ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF//refs\/heads\//}-${GITHUB_SHA:0:7} | jq -r '.manifests[]  | "\(.digest | .[7:19]) \(.platform.os)/\(.platform.architecture)\(.platform.variant // "")"')
+          [[ "${STATUS}" == "success" ]] && DIGESTS=$(docker manifest inspect ${GITHUB_REPOSITORY}:${GITHUB_REF//refs\/heads\//}-${GITHUB_SHA:0:7} | jq -r '.manifests[]  | "\(.digest | .[7:19]) \(.platform.os)/\(.platform.architecture)\(.platform.variant // "")"')
           COMMIT_MESSAGE="$(curl -u "${GITHUB_OWNER}:${GITHUB_TOKEN}" -fsSL --retry 5 "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}" | jq -r .commit.message | head -1)"
           [[ "${STATUS}" == "success" ]] && COLOR="3066993"
           CHANGELOG=$(jq -r '.changelog' < VERSION.json)
