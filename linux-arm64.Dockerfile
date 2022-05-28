@@ -1,4 +1,4 @@
-FROM debian@sha256:afdf49e506cec1ff5dc24a241621861ca62b00649e8c98b24298318164a7ce08
+FROM debian@sha256:92761bea8c8d9e303b4e689ec12ba537c61aa7be64eb1f92d94c8e05be448d2a
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
