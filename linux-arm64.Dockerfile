@@ -1,55 +1,29 @@
-FROM debian@sha256:6aecd8f198cfe59b9340b18004975d63b5cdf486e1d7b53ff29b013304f34c3c
+FROM hotio/base@sha256:75c07e28b9fe25c53b681984c95a04b11e4ab10da751fd2c1a262c3b578b9e16
 
 ARG DEBIAN_FRONTEND="noninteractive"
-
-ENV APP_DIR="/app" CONFIG_DIR="/config" PUID="1000" PGID="1000" UMASK="002" TZ="Etc/UTC" ARGS=""
-ENV XDG_CONFIG_HOME="${CONFIG_DIR}/.config" XDG_CACHE_HOME="${CONFIG_DIR}/.cache" XDG_DATA_HOME="${CONFIG_DIR}/.local/share" LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
-
-VOLUME ["${CONFIG_DIR}"]
-ENTRYPOINT ["/init"]
-
-RUN mkdir "${APP_DIR}" && \
-# create user
-    useradd -u 1000 -U -d "${CONFIG_DIR}" -s /bin/false hotio && \
-        usermod -G users hotio
-
-# install packages
-RUN sed -i 's/main/main non-free/' /etc/apt/sources.list && \
-    apt update && \
-    apt install -y --no-install-recommends --no-install-suggests \
-        ca-certificates jq curl wget2 unzip p7zip-full unrar python3 \
-        locales tzdata && \
-# generate locale
-    locale-gen en_US.UTF-8 && \
-# clean up
-    apt autoremove -y && \
-    apt clean && \
-    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
-
-# https://github.com/just-containers/s6-overlay/releases
-ARG S6_VERSION=2.2.0.3
-
-# install s6-overlay
-RUN file="/tmp/s6-overlay.tar.gz" && curl -fsSL -o "${file}" "https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-aarch64.tar.gz" && \
-    tar xzf "${file}" -C / --exclude="./bin" && \
-    tar xzf "${file}" -C /usr ./bin && \
-        rm "${file}"
 
 ENV CALIBRE_CONFIG_DIRECTORY=${CONFIG_DIR}
 ENV BOOK_DIR="/books"
 
 EXPOSE 8081
 
-# install calibre
-ARG ARM_FULL_VERSION
+# install packages
 RUN apt update && \
-    apt install -y --no-install-recommends --no-install-suggests calibre=${ARM_FULL_VERSION} && \
-    mkdir "${APP_DIR}/bin" && \
-    for file in /usr/bin/calibre*; do ln -s $file $(echo "${file}" | sed "s|/usr/bin|${APP_DIR}/bin|"); done && \
-    for file in /usr/bin/ebook-*; do ln -s $file $(echo "${file}" | sed "s|/usr/bin|${APP_DIR}/bin|"); done && \
+    apt install -y --no-install-recommends --no-install-suggests \
+        xz-utils libglx0 libegl1 libopengl0 libfontconfig1 libx11-6 libxkbcommon0 && \
+# clean up
+    apt autoremove -y && \
     apt clean && \
-        rm -rf \
-        /tmp/* \
-        /var/tmp/*
+    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
+
+# install calibre
+ARG VERSION
+RUN mkdir "${APP_DIR}/bin" && \
+  curl -fsSL "https://download.calibre-ebook.com/${VERSION}/calibre-${VERSION}-arm64.txz" | tar xJf - -C "${APP_DIR}/bin" && \
+  apt-get clean && \
+  rm -rf \
+    /tmp/* \
+    /var/tmp/* && \
+    chmod -R u=rwX,go=rX "${APP_DIR}"
 
 COPY root/ /
