@@ -1,4 +1,4 @@
-FROM hotio/base@sha256:03b6dccd2df0359703e3187ed514822269623208d0cafb052fd765a94a8df18b
+FROM hotio/base@sha256:1dab0930285ba64d5440b69ddf52da6fa25a5a67a39bd739f49fa72d79fe94e0
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -10,7 +10,7 @@ EXPOSE 8081
 # install packages
 RUN apt update && \
     apt install -y --no-install-recommends --no-install-suggests \
-        xz-utils libglx0 libegl1 libopengl0 libfontconfig1 libx11-6 libxkbcommon0 && \
+        xz-utils libglx0 libegl1 libc6 libopengl0 libfontconfig1 libx11-6 libxkbcommon0 && \
 # clean up
     apt autoremove -y && \
     apt clean && \
